@@ -1,11 +1,40 @@
 import requests
 from bs4 import BeautifulSoup
 from translate import Translator
+import chardet
 
-translator = Translator(to_lang="en", from_lang="lt")
+
+class LithuanianToEnglishTranslator:
+    def __init__(self):
+        self.translator = Translator(to_lang="en", from_lang="lt")
+
+    def translate_list(self, lithuanian_words):
+        english_words = []
+        for word in lithuanian_words:
+            translation = self.translator.translate(word)
+            english_words.append(translation)
+        return english_words
 
 
-class TitleScraper():
+class SentenceTranslator:
+    def __init__(self, source_lang="lt", target_lang="en"):
+        self.translator = Translator
+        self.source_lang = source_lang
+        self.target_lang = target_lang
+
+    def translate_sentence(self, sentence):
+        translation = self.translator.translate(sentence, src=self.source_lang, dest=self.target_lang)
+        return translation.text
+
+    def translate_sentences(self, sentences):
+        translated_sentences = []
+        for sentence in sentences:
+            translated_sentence = self.translate_sentence(sentence)
+            translated_sentences.append(translated_sentence)
+        return translated_sentences
+
+
+class TitleScraper:
     def __init__(self, url_link, element1, element2=None):
         self.url_link = url_link
         self.element1 = element1
@@ -22,7 +51,6 @@ class TitleScraper():
 
         return cleaned_text
 
-
     def scrape_titles(self):
         source = requests.get(self.url_link).text
         soup = BeautifulSoup(source, 'html.parser')
@@ -33,8 +61,10 @@ class TitleScraper():
 
         for element in elements:
             title_lt = self.clean_titles(element.get_text().strip())
-            self.title_list_lt.append(title_lt)
-        # print(self.title_list_lt)
+            try:
+                self.title_list_lt.append(title_lt.encode('latin-1').decode('utf-8', errors='ignore'))
+            except:
+                self.title_list_lt.append(title_lt)
 
     def get_10_titles(self):
         return self.title_list_lt[:10]
@@ -47,7 +77,7 @@ if __name__ == "__main__":
     scraper_configs = [
         ('https://www.delfi.lt', '.CBarticleTitle'),
         ('https://www.15min.lt/', 'h4', 'vl-title item-no-front-style'),
-        ('https://www.vz.lt/', 'h2'),
+        ('https://www.lrt.lt', 'h3'),
         ('https://www.lrytas.lt/', 'h2')
     ]
     # Create and run scraper objects in a loop
@@ -55,38 +85,15 @@ if __name__ == "__main__":
         scraper = TitleScraper(*config)
         scraper.scrape_titles()
         print(scraper)
+        print('---')
 
-
-    # #LT titles
-    # source = requests.get('https://www.delfi.lt').text
-    # soup = BeautifulSoup(source, 'html.parser')
-    # elements = soup.select('.CBarticleTitle')
-    #
-    # for element in elements:
-    #     title_lt = element.get_text()
-    #     title_list_lt.append(title_lt)
-    # title_en = translator.translate(title_lt)
-    # title_list_en.append(title_en)
-    #
-    # with st.expander("Click to expand Delfi headlines"):
-    #     for index, title in enumerate(title_list_lt, start=1):
-    #         st.write(f'{index}. {title}')
-    #
-    # title_list_en = translator.translate(title_list_lt)
-    #
-    # Sentiment analysis
-    # analyzer = SentimentIntensityAnalyzer()
-    # sentiment = analyzer.polarity_scores('.'.join(title_list_en))
-    # print(sentiment['compound'])
-    #
-    # #EN titles
-    # source = requests.get('https://www.delfi.lt/en').text
-    # soup = BeautifulSoup(source, 'html.parser')
-    # # Find all elements with article titles
-    # article_titles = soup.find_all("div", class_="C-block-type-102-headline__content")
-    #
-    #
-    # # Extract and print the EN titles
-    # for title in article_titles:
-    #     title_text = title.find("a").text.strip()
-    #     print(title_text)
+'''
+    scraper = TitleScraper('https://www.lrt.lt', 'h3')
+    scraper.scrape_titles()
+    titles_to_translate = scraper.get_10_titles()
+    print(titles_to_translate)
+    
+    lt_translator = LithuanianToEnglishTranslator()
+    english_titles = lt_translator.translate_list(titles_to_translate)
+    print(english_titles)
+'''

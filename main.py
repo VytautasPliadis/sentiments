@@ -1,7 +1,6 @@
 import requests
 from bs4 import BeautifulSoup
 from translate import Translator
-import chardet
 
 
 class LithuanianToEnglishTranslator:
@@ -45,9 +44,9 @@ class TitleScraper:
     @staticmethod
     def clean_titles(input_text):
         try:
-            cleaned_text = input_text.split(' / \n', 1)[1].split('\r', 1)[0].split('\n\n', 1)[0].split('\n', 1)[0]
+            cleaned_text = input_text.split(' / \n', 1)[1].split('\r', 1)[0].split('\n', 1)[0]
         except IndexError:
-            cleaned_text = input_text.split('\r', 1)[0].split('\n\n', 1)[0].split('\n', 1)[0]
+            cleaned_text = input_text.split('\r', 1)[0].split('\n', 1)[0]
 
         return cleaned_text
 
@@ -74,26 +73,30 @@ class TitleScraper:
 
 
 if __name__ == "__main__":
-    scraper_configs = [
-        ('https://www.delfi.lt', '.CBarticleTitle'),
-        ('https://www.15min.lt/', 'h4', 'vl-title item-no-front-style'),
-        ('https://www.lrt.lt', 'h3'),
-        ('https://www.lrytas.lt/', 'h2')
-    ]
-    # Create and run scraper objects in a loop
-    for config in scraper_configs:
-        scraper = TitleScraper(*config)
-        scraper.scrape_titles()
-        print(scraper)
-        print('---')
+    # scraper_configs = [
+    #     ('https://www.delfi.lt', '.CBarticleTitle'),
+    #     ('https://www.15min.lt/', 'h4', 'vl-title item-no-front-style'),
+    #     ('https://www .lrt.lt', 'h3')#('https://www.lrytas.lt/', 'h2')
+    # ]
+    # # Create and run scraper objects in a loop
+    # for config in scraper_configs:
+    #     scraper = TitleScraper(*config)
+    #     scraper.scrape_titles()
+    #     print(scraper)
+    #     print('---')
 
-'''
+    '''
+        scraper = TitleScraper('https://www.lrt.lt', 'h3')
+        scraper.scrape_titles()
+        titles_to_translate = scraper.get_10_titles()
+        print(titles_to_translate)
+        
+        lt_translator = LithuanianToEnglishTranslator()
+        english_titles = lt_translator.translate_list(titles_to_translate)
+        print(english_titles)
+    '''
+
     scraper = TitleScraper('https://www.lrt.lt', 'h3')
     scraper.scrape_titles()
     titles_to_translate = scraper.get_10_titles()
     print(titles_to_translate)
-    
-    lt_translator = LithuanianToEnglishTranslator()
-    english_titles = lt_translator.translate_list(titles_to_translate)
-    print(english_titles)
-'''
